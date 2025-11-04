@@ -1,0 +1,108 @@
+/* Testimonial Carousel Styles */
+
+.testimonial-carousel {
+	padding: 20px 0;
+}
+
+.testimonial-carousel .slick-dots {
+	bottom: -50px;
+	text-align: center;
+}
+
+.testimonial-carousel .slick-dots li {
+	margin: 0 6px;
+}
+
+.testimonial-carousel .slick-dots li button {
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--primary) 30%, transparent);
+	border: 2px solid var(--primary);
+	opacity: 0.5;
+	transition: all 0.3s ease;
+}
+
+.testimonial-carousel .slick-dots li.slick-active button {
+	opacity: 1;
+	background: var(--primary);
+	transform: scale(1.2);
+}
+
+.testimonial-carousel .slick-arrow {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 10;
+	width: 48px;
+	height: 48px;
+	background: var(--primary);
+	color: var(--primary-contrast);
+	border: none;
+	border-radius: 50%;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	font-size: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4px 12px rgba(47, 111, 237, 0.25);
+}
+
+.testimonial-carousel .slick-arrow:hover {
+	background: color-mix(in srgb, var(--primary) 90%, #0000);
+	transform: translateY(-50%) scale(1.1);
+	box-shadow: 0 6px 20px rgba(47, 111, 237, 0.35);
+}
+
+.testimonial-carousel .slick-prev {
+	left: -60px;
+}
+
+.testimonial-carousel .slick-next {
+	right: -60px;
+}
+
+.testimonial-carousel .slick-arrow:focus {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+	.testimonial-carousel .slick-prev {
+		left: -20px;
+	}
+	.testimonial-carousel .slick-next {
+		right: -20px;
+	}
+}
+
+@media (max-width: 991.98px) {
+	.testimonial-carousel .slick-arrow {
+		width: 40px;
+		height: 40px;
+		font-size: 16px;
+	}
+	.testimonial-carousel .slick-prev {
+		left: -10px;
+	}
+	.testimonial-carousel .slick-next {
+		right: -10px;
+	}
+}
+
+@media (max-width: 767.98px) {
+	.testimonial-carousel .slick-arrow {
+		width: 36px;
+		height: 36px;
+		font-size: 14px;
+	}
+	.testimonial-carousel .slick-prev {
+		left: 0;
+	}
+	.testimonial-carousel .slick-next {
+		right: 0;
+	}
+}
+

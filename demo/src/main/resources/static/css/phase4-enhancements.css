@@ -1,0 +1,612 @@
+/* Phase 4 — Layout & Components Enhancements */
+
+/* ============================================
+   1. HEADER/NAVIGATION ENHANCEMENTS
+   ============================================ */
+
+/* Header Top Bar */
+.header-top-bar {
+	padding: 12px 0;
+	transition: all 0.3s ease;
+}
+
+.top-bar-info li a,
+.top-right-bar a {
+	transition: opacity 0.2s ease;
+}
+
+.top-bar-info li a:hover {
+	opacity: 0.85;
+}
+
+/* Navigation Bar */
+.navigation {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+	transition: all 0.3s ease;
+	padding: 12px 0;
+}
+
+.navigation .navbar-brand {
+	margin-top: 0;
+	transition: transform 0.2s ease;
+}
+
+.navigation .navbar-brand:hover {
+	transform: scale(1.02);
+}
+
+/* Navigation Links */
+#navbarmain .nav-link {
+	position: relative;
+	padding: 12px 18px !important;
+	font-weight: 600;
+	color: var(--text);
+	transition: all 0.25s ease;
+	border-radius: 8px;
+	margin: 0 4px;
+}
+
+#navbarmain .nav-link::before {
+	content: "";
+	position: absolute;
+	bottom: 8px;
+	left: 18px;
+	right: 18px;
+	height: 2px;
+	background: var(--primary);
+	transform: scaleX(0);
+	transition: transform 0.3s ease;
+}
+
+#navbarmain .nav-link:hover,
+#navbarmain .nav-link:focus {
+	color: var(--primary);
+	background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+#navbarmain .nav-link:hover::before,
+#navbarmain .nav-link.active::before {
+	transform: scaleX(1);
+}
+
+#navbarmain .nav-item.active > .nav-link {
+	color: var(--primary);
+	background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+#navbarmain .nav-item.active > .nav-link::before {
+	transform: scaleX(1);
+}
+
+/* Dropdown Menus */
+.dropdown-menu {
+	border-radius: 12px !important;
+	border: 1px solid rgba(0, 0, 0, 0.08) !important;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+	margin-top: 8px !important;
+	padding: 8px 0 !important;
+}
+
+.dropdown-item {
+	padding: 12px 24px !important;
+	transition: all 0.2s ease;
+	border-radius: 0;
+	margin: 2px 8px;
+	border-radius: 6px;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+	background: var(--primary) !important;
+	color: var(--primary-contrast) !important;
+	transform: translateX(4px);
+}
+
+/* Mobile Navigation Toggle */
+.navbar-toggler {
+	border: 2px solid rgba(0, 0, 0, 0.1);
+	border-radius: 8px;
+	padding: 8px 12px;
+	transition: all 0.2s ease;
+}
+
+.navbar-toggler:hover {
+	border-color: var(--primary);
+	background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.navbar-toggler:focus {
+	box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--primary) 25%, transparent);
+	outline: none;
+}
+
+/* Mobile Collapse */
+@media (max-width: 991.98px) {
+	#navbarmain {
+		padding: 20px 0;
+		background: var(--surface);
+		border-radius: 12px;
+		margin-top: 12px;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+	}
+
+	#navbarmain .nav-link {
+		padding: 14px 24px !important;
+		border-radius: 8px;
+		margin: 4px 12px;
+	}
+
+	.dropdown-menu {
+		position: static !important;
+		transform: none !important;
+		opacity: 1 !important;
+		visibility: visible !important;
+		margin-left: 24px;
+		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+	}
+}
+
+/* ============================================
+   2. BUTTON STANDARDIZATION
+   ============================================ */
+
+.btn {
+	min-height: 44px;
+	font-weight: 600;
+	letter-spacing: 0.5px;
+	padding: 12px 28px;
+	border-radius: 12px;
+	transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	position: relative;
+	overflow: hidden;
+}
+
+.btn::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 0;
+	height: 0;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.2);
+	transform: translate(-50%, -50%);
+	transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+	width: 300px;
+	height: 300px;
+}
+
+.btn:focus {
+	outline: none;
+	box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--primary) 25%, transparent),
+		0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+	transform: translateY(1px);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* Button Sizes */
+.btn-sm {
+	min-height: 36px;
+	padding: 8px 20px;
+	font-size: 13px;
+}
+
+.btn-lg {
+	min-height: 52px;
+	padding: 14px 36px;
+	font-size: 16px;
+}
+
+/* Button Variants */
+.btn-main,
+.btn-main-2 {
+	box-shadow: 0 4px 12px rgba(47, 111, 237, 0.25);
+}
+
+.btn-main:hover,
+.btn-main-2:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(47, 111, 237, 0.35);
+}
+
+.btn-round-full {
+	border-radius: 50px;
+}
+
+/* ============================================
+   3. INPUT/FORM STANDARDIZATION
+   ============================================ */
+
+.form-control,
+select.form-control {
+	min-height: 48px;
+	padding: 12px 16px;
+	font-size: 15px;
+	border-radius: 12px;
+	border: 2px solid color-mix(in srgb, var(--text) 15%, transparent);
+	transition: all 0.25s ease;
+	background: var(--surface);
+	color: var(--text);
+}
+
+.form-control:focus,
+select.form-control:focus {
+	border-color: var(--primary);
+	box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--primary) 20%, transparent),
+		0 2px 8px rgba(47, 111, 237, 0.15);
+	outline: none;
+	background: var(--surface);
+}
+
+.form-control:hover:not(:focus) {
+	border-color: color-mix(in srgb, var(--text) 25%, transparent);
+}
+
+.form-control::placeholder {
+	color: var(--muted);
+	opacity: 0.7;
+}
+
+select.form-control option {
+	padding: 12px;
+	background: var(--surface);
+	color: var(--text);
+}
+
+/* Form Groups */
+.form-group {
+	margin-bottom: 20px;
+}
+
+.form-group label {
+	font-weight: 600;
+	color: var(--text);
+	margin-bottom: 8px;
+	display: block;
+	font-size: 14px;
+}
+
+/* ============================================
+   4. CARD STANDARDIZATION
+   ============================================ */
+
+.card,
+.service-item,
+.feature-item,
+.service-block,
+.testimonial-block.style-2 {
+	border-radius: 16px;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	border: 1px solid rgba(0, 0, 0, 0.04);
+	overflow: hidden;
+}
+
+.card:hover,
+.service-item:hover,
+.feature-item:hover,
+.service-block:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+	border-color: rgba(47, 111, 237, 0.2);
+}
+
+/* Feature Items */
+.feature-item {
+	padding: 32px 28px;
+	margin: 0 12px;
+}
+
+.feature-icon i {
+	transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.feature-item:hover .feature-icon i {
+	transform: scale(1.1);
+	color: var(--primary);
+}
+
+/* Service Items */
+.service-item {
+	padding: 32px 28px;
+}
+
+.service-item .icon {
+	margin-bottom: 16px;
+}
+
+.service-item .icon i {
+	transition: transform 0.3s ease;
+}
+
+.service-item:hover .icon i {
+	transform: scale(1.15) rotate(5deg);
+}
+
+/* Service Blocks */
+.service-block {
+	padding: 24px;
+	margin-top: 40px;
+}
+
+/* ============================================
+   5. SECTION RECOMPOSITION
+   ============================================ */
+
+/* Hero Banner */
+.banner .block {
+	padding: 100px 0 180px;
+}
+
+.banner .block h1 {
+	font-size: clamp(36px, 5vw, 64px);
+	line-height: 1.2;
+	margin-bottom: 24px;
+}
+
+.banner .block p {
+	font-size: clamp(16px, 2vw, 20px);
+	line-height: 1.7;
+	margin-bottom: 32px;
+	max-width: 600px;
+}
+
+/* Features Section */
+.features {
+	margin-top: -40px;
+	position: relative;
+	z-index: 10;
+	padding: 60px 0 80px;
+}
+
+.feature-block {
+	gap: 24px;
+}
+
+/* Services Section */
+.section.service {
+	padding: 100px 0;
+}
+
+.service-item {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.service-item .content {
+	flex-grow: 1;
+}
+
+/* Testimonials Section */
+.testimonial-2 {
+	padding: 100px 0;
+	background: var(--bg);
+}
+
+.testimonial-block.style-2 {
+	padding: 32px 28px;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.testimonial-block.style-2 .client-info {
+	flex-grow: 1;
+	margin-bottom: 16px;
+}
+
+.testimonial-block.style-2 .testimonial-thumb img {
+	transition: transform 0.3s ease;
+}
+
+.testimonial-block.style-2:hover .testimonial-thumb img {
+	transform: scale(1.05);
+}
+
+/* Section Titles */
+.section-title {
+	margin-bottom: 60px;
+}
+
+.section-title h2 {
+	font-size: clamp(32px, 4vw, 44px);
+	margin-bottom: 16px;
+}
+
+.section-title .divider {
+	width: 60px;
+	height: 4px;
+	background: var(--primary);
+	border-radius: 2px;
+	margin: 24px auto;
+}
+
+.section-title p {
+	font-size: 16px;
+	line-height: 1.7;
+	color: var(--muted);
+	max-width: 700px;
+	margin: 0 auto;
+}
+
+/* ============================================
+   6. APPOINTMENT FORM POLISH
+   ============================================ */
+
+.appoinment-wrap,
+.register-wrap {
+	background: var(--surface);
+	padding: 48px;
+	border-radius: 20px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.appoinment-form .form-group,
+.register-form .form-group {
+	margin-bottom: 24px;
+}
+
+.appoinment-form .row > [class*="col-"] {
+	padding-left: 12px;
+	padding-right: 12px;
+}
+
+.appoinment-form .btn {
+	margin-top: 8px;
+	width: 100%;
+	max-width: 280px;
+}
+
+/* Time Slot Select Enhancement */
+#appointment_time {
+	cursor: pointer;
+}
+
+#appointment_time option {
+	padding: 12px 16px;
+}
+
+#appointment_time option:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* Form Validation States */
+.form-control:valid {
+	border-color: var(--accent);
+}
+
+.form-control:invalid:not(:placeholder-shown) {
+	border-color: var(--danger);
+}
+
+#booking-warning {
+	padding: 12px 16px;
+	background: color-mix(in srgb, var(--danger) 10%, transparent);
+	border-left: 4px solid var(--danger);
+	border-radius: 8px;
+	margin-top: 16px;
+	font-size: 14px;
+}
+
+/* ============================================
+   7. RESPONSIVE ENHANCEMENTS
+   ============================================ */
+
+@media (max-width: 991.98px) {
+	.banner .block {
+		padding: 80px 0 140px;
+		text-align: center;
+	}
+
+	.banner .block p {
+		max-width: 100%;
+	}
+
+	.features {
+		padding: 40px 0 60px;
+	}
+
+	.feature-item {
+		margin: 0 0 24px 0;
+	}
+
+	.appoinment-wrap,
+	.register-wrap {
+		padding: 32px 24px;
+	}
+
+	.service-item,
+	.feature-item,
+	.testimonial-block.style-2 {
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+	}
+
+	.service-item:hover,
+	.feature-item:hover,
+	.testimonial-block.style-2:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+	}
+}
+
+@media (max-width: 767.98px) {
+	.banner .block {
+		padding: 60px 0 100px;
+	}
+
+	.section.service,
+	.testimonial-2 {
+		padding: 60px 0;
+	}
+
+	.appoinment-wrap,
+	.register-wrap {
+		padding: 24px 20px;
+		border-radius: 16px;
+	}
+
+	.btn {
+		width: 100%;
+		max-width: 100%;
+	}
+
+	.feature-block {
+		flex-direction: column;
+	}
+}
+
+/* Admin Login Button in Nav */
+.nav-item .btn {
+	margin-left: 8px;
+	vertical-align: middle;
+}
+
+@media (max-width: 991.98px) {
+	.nav-item .btn {
+		margin: 8px 12px;
+		width: calc(100% - 24px);
+	}
+}
+
+/* ============================================
+   8. ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+
+/* Focus Visible */
+*:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
+}
+
+.btn:focus-visible,
+.form-control:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
+}
+
+/* Skip to content link */
+.skip-link {
+	position: absolute;
+	top: -40px;
+	left: 0;
+	background: var(--primary);
+	color: var(--primary-contrast);
+	padding: 8px 16px;
+	text-decoration: none;
+	z-index: 9999;
+	border-radius: 0 0 8px 0;
+}
+
+.skip-link:focus {
+	top: 0;
+}
+

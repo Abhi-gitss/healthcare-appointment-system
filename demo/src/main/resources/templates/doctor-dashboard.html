@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Doctor Dashboard</title>
+    <link rel="stylesheet" href="plugins/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="plugins/icofont/icofont.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body id="top">
+    <header>
+        <nav class="navbar navbar-expand-lg navigation" id="navbar">
+            <div class="container">
+                <a class="navbar-brand" href="index.html">
+                    <img src="images/unnamed.png" alt="" class="img-fluid">
+                </a>
+                <div class="collapse navbar-collapse" id="navbarmain">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="doctor-dashboard.html">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-sm btn-outline-secondary" href="/logout">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <section class="page-title bg-1">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="block text-center">
+                        <h1 class="text-capitalize mb-5 text-lg"><span id="doctor-name">Doctor Name</span> Dashboard</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section appointment-list">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h2 class="mb-4 title-color">Upcoming Appointments</h2>
+                    <div id="appointments-container">
+                        <p id="loading-message">Loading appointments...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        let currentDoctorId = null; // Store doctor ID for appointment management
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const doctorNameElement = document.getElementById('doctor-name');
+            const appointmentsContainer = document.getElementById('appointments-container');
+            
+            // First, fetch the logged-in doctor's information
+            fetch('/api/doctors/me')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch doctor information");
+                    }
+                    return response.json();
+                })
+                .then(doctorInfo => {
+                    // Display doctor's name
+                    doctorNameElement.textContent = doctorInfo.name || 'Doctor';
+                    currentDoctorId = doctorInfo.doctorId;
+                    
+                    // Now fetch doctor's appointments
+                    return fetch('/api/doctors/appointments');
+                })
+                .then(response => {
+                    if (response.status === 403) {
+                        appointmentsContainer.innerHTML = '<p class="alert alert-danger">Access Denied. You are not authorized to view this page.</p>';
+                        return [];
+                    }
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch appointments");
+                    }
+                    return response.json();
+                })
+                .then(appointments => {
+                    appointmentsContainer.innerHTML = ''; // Clear loading message
+
+                    if (appointments.length === 0) {
+                        appointmentsContainer.innerHTML = '<p>You have no upcoming appointments.</p>';
+                        return;
+                    }
+
+                    let tableHTML = '<table class="table table-bordered table-striped">';
+                    tableHTML += '<thead class="thead-dark"><tr><th>Appointment ID</th><th>Patient ID</th><th>Date</th><th>Time</th><th>Department</th><th>Reason</th><th>Status</th><th>Actions</th></tr></thead>';
+                    tableHTML += '<tbody>';
+
+                    appointments.forEach(app => {
+                        const canCancel = app.status === 'Scheduled' || app.status === 'Pending';
+                        const canReschedule = app.status === 'Scheduled' || app.status === 'Pending';
+                        const canUpdateStatus = app.status !== 'Cancelled';
+                        
+                        tableHTML += `<tr>
+                            <td>${app.appointment_id || app.id || 'N/A'}</td>
+                            <td>${app.patient_id}</td>
+                            <td>${app.appointment_date}</td>
+                            <td>${app.appointment_time}</td>
+                            <td>${app.department}</td>
+                            <td>${app.reason || 'N/A'}</td>
+                            <td><span class="badge badge-info">${app.status}</span></td>
+                            <td>
+                                ${canCancel ? `<button class="btn btn-sm btn-danger" onclick="cancelAppointment(${app.appointment_id || app.id})">Cancel</button>` : ''}
+                                ${canUpdateStatus ? `<button class="btn btn-sm btn-primary" onclick="updateStatus(${app.appointment_id || app.id})">Update Status</button>` : ''}
+                            </td>
+                        </tr>`;
+                    });
+
+                    tableHTML += '</tbody></table>';
+                    appointmentsContainer.innerHTML = tableHTML;
+                })
+                .catch(error => {
+                    appointmentsContainer.innerHTML = `<p class="alert alert-warning">Error: Could not load data. ${error.message}</p>`;
+                });
+        });
+
+        // Cancel appointment function
+        function cancelAppointment(appointmentId) {
+            if (!confirm('Are you sure you want to cancel this appointment?')) {
+                return;
+            }
+            
+            fetch(`/api/appointments/${appointmentId}/cancel?userId=${currentDoctorId}&userRole=DOCTOR`, {
+                method: 'PUT'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.message);
+                } else {
+                    alert('Appointment cancelled successfully!');
+                    location.reload(); // Reload to show updated list
+                }
+            })
+            .catch(error => {
+                alert('Error cancelling appointment: ' + error.message);
+            });
+        }
+
+        // Update appointment status function
+        function updateStatus(appointmentId) {
+            const newStatus = prompt('Enter new status (Scheduled, Completed, Cancelled, Pending, In Progress):');
+            if (!newStatus) return;
+            
+            fetch(`/api/appointments/${appointmentId}/status?userId=${currentDoctorId}&userRole=DOCTOR`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.message);
+                } else {
+                    alert('Status updated successfully!');
+                    location.reload(); // Reload to show updated list
+                }
+            })
+            .catch(error => {
+                alert('Error updating status: ' + error.message);
+            });
+        }
+    </script>
+</body>
+</html>

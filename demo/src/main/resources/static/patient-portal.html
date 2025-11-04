@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Patient Portal - My Appointments</title>
+    <link rel="stylesheet" href="plugins/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="plugins/icofont/icofont.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .patient-portal-section {
+            padding: 80px 0;
+            background: #f8f9fa;
+        }
+        .patient-info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .appointment-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .appointment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-scheduled { background: #28a745; color: white; }
+        .status-completed { background: #007bff; color: white; }
+        .status-cancelled { background: #dc3545; color: white; }
+        .status-pending { background: #ffc107; color: #333; }
+        .btn-cancel {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-cancel:hover {
+            background: #c82333;
+        }
+        .btn-cancel:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .search-box {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .alert-area { margin-bottom: 20px; }
+    </style>
+</head>
+
+<body id="top">
+    <header>
+        <nav class="navbar navbar-expand-lg navigation" id="navbar">
+            <div class="container">
+                <a class="navbar-brand" href="index.html">
+                    <img src="images/unnamed.png" alt="" class="img-fluid">
+                </a>
+                <div class="collapse navbar-collapse" id="navbarmain">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="appoinment.html">Book Appointment</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <section class="page-title bg-1">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="block text-center">
+                        <h1 class="text-capitalize mb-5 text-lg text-white">Patient Portal</h1>
+                        <p class="text-white">View and manage your appointments</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="patient-portal-section">
+        <div class="container">
+            <!-- Alert / Error area -->
+            <div id="alertArea" class="alert-area"></div>
+
+            <!-- Search Box -->
+            <div class="search-box">
+                <h3 class="mb-4">Find Your Appointments</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="patientId">Enter Your Patient ID</label>
+                            <input type="number" class="form-control" id="patientId" 
+                                   placeholder="e.g., 1, 2, 3..." required>
+                            <small class="form-text text-muted">Your Patient ID was provided when you registered</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <button id="viewBtn" class="btn btn-main btn-round-full" onclick="loadAppointments()">
+                            View My Appointments
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient Info Card -->
+            <div id="patientInfo" style="display: none;">
+                <div class="patient-info-card">
+                    <h4>Patient Information</h4>
+                    <p><strong>Patient ID:</strong> <span id="currentPatientId"></span></p>
+                    <p><strong>Total Appointments:</strong> <span id="totalAppointments"></span></p>
+                </div>
+            </div>
+
+            <!-- Appointments Container -->
+            <div id="appointmentsContainer">
+                <div class="text-center">
+                    <p class="text-muted">Enter your Patient ID above to view your appointments</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        let currentPatientId = null;
+
+        function showAlert(html, type = 'danger') {
+            const area = document.getElementById('alertArea');
+            area.innerHTML = `<div class="alert alert-${type}" role="alert">${html}</div>`;
+            // automatically hide after 6 seconds
+            setTimeout(() => { if (area) area.innerHTML = ''; }, 6000);
+        }
+
+        // Utility to parse response safely (handles JSON and plain text/HTML)
+        async function parseResponseSafely(response) {
+            const contentType = response.headers.get('content-type') || '';
+            const text = await response.text();
+            if (contentType.includes('application/json')) {
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    // fallback: return text wrapped
+                    return { _raw: text };
+                }
+            } else {
+                // not JSON — return raw text inside an object
+                return { _raw: text };
+            }
+        }
+
+        async function loadAppointments() {
+            const patientIdEl = document.getElementById('patientId');
+            const patientId = patientIdEl ? patientIdEl.value && patientIdEl.value.trim() : null;
+
+            if (!patientId) {
+                showAlert('Please enter your Patient ID', 'warning');
+                return;
+            }
+
+            currentPatientId = patientId;
+
+            // Show loading state
+            document.getElementById('appointmentsContainer').innerHTML =
+                '<div class="text-center"><p>Loading your appointments...</p></div>';
+
+            try {
+                const resp = await fetch(`/api/appointments/search?patientId=${encodeURIComponent(patientId)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!resp.ok) {
+                    // try to parse text for a useful message
+                    const txt = await resp.text();
+                    // show HTML/text returned by server if any
+                    showAlert(`Error fetching appointments: ${resp.status} ${resp.statusText}<br><pre style="white-space:pre-wrap;">${escapeHtml(txt)}</pre>`, 'danger');
+                    document.getElementById('appointmentsContainer').innerHTML = '';
+                    return;
+                }
+
+                const parsed = await parseResponseSafely(resp);
+
+                // If server returned raw HTML or text in parsed._raw, treat as error (likely an HTML error page)
+                if (parsed && parsed._raw && !Array.isArray(parsed)) {
+                    // If backend actually returned a plain JSON-like text, parsed might be an object with _raw — handle gracefully
+                    // Try to JSON.parse raw if it looks like JSON
+                    try {
+                        const maybeJson = JSON.parse(parsed._raw);
+                        displayAppointments(maybeJson);
+                        document.getElementById('currentPatientId').textContent = patientId;
+                        document.getElementById('totalAppointments').textContent = (Array.isArray(maybeJson) ? maybeJson.length : 0);
+                        document.getElementById('patientInfo').style.display = 'block';
+                    } catch (e) {
+                        showAlert('Server returned unexpected response (not JSON). See details below.', 'danger');
+                        document.getElementById('appointmentsContainer').innerHTML = `<div class="alert alert-warning"><pre style="white-space:pre-wrap;">${escapeHtml(parsed._raw)}</pre></div>`;
+                    }
+                    return;
+                }
+
+                const appointments = Array.isArray(parsed) ? parsed : (parsed.appointments || []);
+
+                displayAppointments(appointments);
+
+                // Show patient info
+                document.getElementById('currentPatientId').textContent = patientId;
+                document.getElementById('totalAppointments').textContent = appointments.length;
+                document.getElementById('patientInfo').style.display = 'block';
+            } catch (error) {
+                console.error(error);
+                showAlert('Error: ' + (error.message || 'Failed to fetch appointments'), 'danger');
+                document.getElementById('appointmentsContainer').innerHTML = '';
+            }
+        }
+
+        function displayAppointments(appointments) {
+            const container = document.getElementById('appointmentsContainer');
+
+            if (!Array.isArray(appointments) || appointments.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center">
+                        <p class="text-muted">You have no appointments scheduled.</p>
+                        <a href="appoinment.html" class="btn btn-main btn-round-full mt-3">Book an Appointment</a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<h3 class="mb-4">My Appointments</h3>';
+
+            appointments.forEach(app => {
+                const statusClass = getStatusClass(app.status);
+                const statusNormalized = (app.status || '').toLowerCase();
+                const canCancel = (statusNormalized === 'scheduled' || statusNormalized === 'pending');
+
+                // safe values
+                const appointmentId = app.appointment_id || app.id || '';
+                const appointmentDate = app.appointment_date || '';
+                const appointmentTime = app.appointment_time || '';
+                const department = app.department || '';
+                const doctorId = app.doctor_id || app.doctorId || 'N/A';
+                const reason = app.reason ? `<p class="mb-2"><strong>Reason:</strong> ${escapeHtml(app.reason)}</p>` : '';
+
+                html += `
+                    <div class="appointment-card" id="appointment-${appointmentId}">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5>Appointment #${escapeHtml(String(appointmentId) || 'N/A')}</h5>
+                                <p class="mb-2"><strong>Date:</strong> ${escapeHtml(appointmentDate)}</p>
+                                <p class="mb-2"><strong>Time:</strong> ${escapeHtml(appointmentTime)}</p>
+                                <p class="mb-2"><strong>Department:</strong> ${escapeHtml(department)}</p>
+                                <p class="mb-2"><strong>Doctor ID:</strong> ${escapeHtml(String(doctorId))}</p>
+                                ${reason}
+                            </div>
+                            <div class="col-md-4 text-right">
+                                <span class="status-badge ${statusClass}">${escapeHtml(app.status || 'Pending')}</span>
+                                ${canCancel ? `
+                                    <br><br>
+                                    <button class="btn-cancel" onclick="cancelAppointment('${appointmentId}')">
+                                        Cancel Appointment
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function getStatusClass(status) {
+            const statusLower = (status || '').toLowerCase();
+            if (statusLower === 'scheduled') return 'status-scheduled';
+            if (statusLower === 'completed') return 'status-completed';
+            if (statusLower === 'cancelled') return 'status-cancelled';
+            if (statusLower === 'pending') return 'status-pending';
+            return 'status-pending';
+        }
+
+        async function cancelAppointment(appointmentId) {
+            if (!appointmentId) {
+                showAlert('Appointment ID missing', 'warning');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to cancel this appointment?')) {
+                return;
+            }
+
+            if (!currentPatientId) {
+                showAlert('Error: Patient ID not found. Please load appointments first.', 'warning');
+                return;
+            }
+
+            // Disable the cancel button for this appointment while request is in progress
+            const btnSelector = document.querySelector(`#appointment-${appointmentId} .btn-cancel`);
+            if (btnSelector) btnSelector.disabled = true;
+
+            try {
+                const url = `/api/appointments/${encodeURIComponent(appointmentId)}/cancel?userId=${encodeURIComponent(currentPatientId)}&userRole=PATIENT`;
+                const resp = await fetch(url, { method: 'PUT', headers: { 'Accept': 'application/json' } });
+
+                if (!resp.ok) {
+                    const txt = await resp.text();
+                    showAlert(`Failed to cancel appointment: ${resp.status} ${resp.statusText}<br><pre style="white-space:pre-wrap;">${escapeHtml(txt)}</pre>`, 'danger');
+                    if (btnSelector) btnSelector.disabled = false;
+                    return;
+                }
+
+                // parse body safely
+                const parsed = await parseResponseSafely(resp);
+                // If server returned JSON with error field
+                if (parsed && (parsed.error || parsed._raw && parsed._raw.toLowerCase().includes('error'))) {
+                    const msg = parsed.message || parsed._raw || JSON.stringify(parsed);
+                    showAlert('Error: ' + escapeHtml(String(msg)), 'danger');
+                } else {
+                    showAlert('Appointment cancelled successfully!', 'success');
+                }
+
+                // Reload appointments to reflect updated status
+                await loadAppointments();
+            } catch (err) {
+                console.error(err);
+                showAlert('Error cancelling appointment: ' + (err.message || err), 'danger');
+                if (btnSelector) btnSelector.disabled = false;
+            }
+        }
+
+        // Escape HTML helper
+        function escapeHtml(unsafe) {
+            if (unsafe === null || unsafe === undefined) return '';
+            return String(unsafe)
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
+        }
+
+        // Allow Enter key to submit — attach after DOM content loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const pid = document.getElementById('patientId');
+            if (pid) {
+                pid.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        loadAppointments();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

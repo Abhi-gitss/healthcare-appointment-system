@@ -16,39 +16,39 @@ public class SecurityConfig {
     public InMemoryUserDetailsManager userDetailsManager() {
 
         // Assign a common "DOCTOR" role for dashboard access
-        UserDetails DrSarahJohnson = User.builder()
-                .username("Dr. Sarah Johnson")
-                .password("{noop}sarah123")
+        UserDetails DrAditiSharma = User.builder()
+                .username("Dr. Aditi Sharma")
+                .password("{noop}aditi123")
                 .roles("EMPLOYEE", "DOCTOR")
                 .build();
 
-        UserDetails DrMichaelChen = User.builder()
-                .username("Dr. Michael Chen")
-                .password("{noop}chen123")
+        UserDetails DrRajeevKumar = User.builder()
+                .username("Dr. Rajeev Kumar")
+                .password("{noop}rajeev123")
                 .roles("EMPLOYEE", "MANAGER", "DOCTOR")
                 .build();
 
-        UserDetails DrEmilyDavis = User.builder()
-                .username("Dr. Emily Davis")
-                .password("{noop}davis123")
+        UserDetails DrMeeraSingh = User.builder()
+                .username("Dr. Meera Singh")
+                .password("{noop}meera123")
                 .roles("DOCTOR")
                 .build();
 
-        UserDetails DrRobertBrown = User.builder()
-                .username("Dr. Robert Brown")
-                .password("{noop}brown123")
+        UserDetails DrSunilGrover = User.builder()
+                .username("Dr. SunilGrover")
+                .password("{noop}sunil123")
                 .roles("DOCTOR")
                 .build();
 
-        UserDetails DrLisaMartinez = User.builder()
-                .username("Dr. Lisa Martinez")
-                .password("{noop}lisa123")
+        UserDetails DrPoojaChawla = User.builder()
+                .username("Dr. Pooja Chawla")
+                .password("{noop}pooja123")
                 .roles("DOCTOR")
                 .build();
 
-        UserDetails DrJamesWilson = User.builder()
-                .username("Dr. James Wilson")
-                .password("{noop}james123")
+        UserDetails DrAmitabhJoshi = User.builder()
+                .username("Dr. Amitabh Joshi")
+                .password("{noop}amitabh123")
                 .roles("DOCTOR")
                 .build();
 
@@ -59,8 +59,8 @@ public class SecurityConfig {
                 .build();
 
         return new InMemoryUserDetailsManager(
-                DrSarahJohnson, DrMichaelChen, DrEmilyDavis,
-                DrRobertBrown, DrLisaMartinez, DrJamesWilson, DrShekhar
+                DrAditiSharma, DrRajeevKumar, DrMeeraSingh,
+                DrSunilGrover, DrPoojaChawla, DrAmitabhJoshi, DrShekhar
         );
     }
 

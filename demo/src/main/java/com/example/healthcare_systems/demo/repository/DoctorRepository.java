@@ -8,5 +8,9 @@ import com.example.healthcare_systems.demo.Entity.Doctor;
 
 public interface DoctorRepository extends JpaRepository<Doctor, Integer> {
     List<Doctor> findByDepartment(String department);
+    List<Doctor> findByDepartmentIgnoreCase(String department);
+    List<Doctor> findByDepartmentContainingIgnoreCase(String department);
+    List<Doctor> findBySpecialtyIgnoreCase(String specialty);
+    List<Doctor> findBySpecialtyContainingIgnoreCase(String specialty);
     Doctor findByName(String name);
 }

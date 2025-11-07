@@ -29,8 +29,9 @@ public class AppointmentService {
         if (doctor == null) {
             return List.of(); // No appointments if no doctor
         }
-        String department = doctor.getDepartment();
-        return appointmentRepository.findByDepartment(department);
+        // Query by doctor_id instead of department to get only this doctor's appointments
+        Integer doctorId = doctor.getDoctor_id();
+        return appointmentRepository.findByDoctorId(doctorId);
     }
 
     // Cancel appointment (for patients and doctors)

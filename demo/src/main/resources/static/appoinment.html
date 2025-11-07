@@ -153,13 +153,13 @@
 									<div class="form-group">
 										<select class="form-control" id="department" name="department" required>
 											<option value="">Choose Department</option>
-											<option value="Cardiology">Heart Care</option>
-											<option value=" Neurology">Neuro Sciences</option>
-											<option value="Orthopedics">Bone & Joint</option>
-											<option value=" Dermatology">Skin Care</option>
-											<option value=" Gynecology">Women Health</option>
-											<option value=" Pediatrics">Child Care</option>
-											<option value="Dentist">Dentist</option>
+									<option value="Cardiology">Heart Care</option>
+									<option value="Neurology">Neuro Sciences</option>
+									<option value="Orthopedics">Bone & Joint</option>
+									<option value="Dermatology">Skin Care</option>
+									<option value="Gynecology">Women Health</option>
+									<option value="Pediatrics">Child Care</option>
+									<option value="Dentist">Dentist</option>
 										</select>
 									</div>
 								</div>
@@ -591,7 +591,7 @@
 	<!-- this js code juts gives doctors name after writing down his department-->
 	<script>
 		document.getElementById('department').addEventListener('change', function () {
-			var dept = this.value;
+			var dept = (this.value || '').trim();
 			const doctorSelect = document.getElementById('doctor_id');
 			doctorSelect.innerHTML = '';
 			const loadingOpt = document.createElement('option');
@@ -611,6 +611,11 @@
 					placeholder.value = '';
 					placeholder.text = 'Select Doctor';
 					doctorSelect.appendChild(placeholder);
+					if (!Array.isArray(doctors) || doctors.length === 0) {
+						showToast('No doctors found for this department', 'warning');
+						doctorSelect.disabled = false;
+						return;
+					}
 					doctors.forEach(function (doc) {
 						var opt = document.createElement('option');
 						opt.value = doc.doctor_id;

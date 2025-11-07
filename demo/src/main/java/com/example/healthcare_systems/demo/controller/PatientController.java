@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.healthcare_systems.demo.Entity.Patient;
 import com.example.healthcare_systems.demo.repository.PatientRepository;
+import com.example.healthcare_systems.demo.service.EmailService;
 
 // PatientController.java
 @RestController
@@ -15,10 +16,20 @@ import com.example.healthcare_systems.demo.repository.PatientRepository;
 public class PatientController {
     @Autowired
     private PatientRepository patientRepository;
+    
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping
     public Patient registerPatient(@RequestBody Patient patient) {
-        return patientRepository.save(patient);
+        Patient savedPatient = patientRepository.save(patient);
+        
+        // Send registration confirmation email
+        if (savedPatient.getEmail() != null && !savedPatient.getEmail().isEmpty()) {
+            emailService.sendRegistrationEmail(savedPatient);
+        }
+        
+        return savedPatient;
     }
 }
 

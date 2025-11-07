@@ -1,15 +1,21 @@
 package com.example.healthcare_systems.demo.controller;
 import com.example.healthcare_systems.demo.Entity.Appointment;
+import com.example.healthcare_systems.demo.Entity.Patient;
+import com.example.healthcare_systems.demo.Entity.Doctor;
 import com.example.healthcare_systems.demo.repository.AppointmentRepository;
 import com.example.healthcare_systems.demo.repository.PatientRepository;
+import com.example.healthcare_systems.demo.repository.DoctorRepository;
 import com.example.healthcare_systems.demo.service.AppointmentService;
+import com.example.healthcare_systems.demo.service.EmailService;
 
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +33,11 @@ public class AppointmentController {
     @Autowired
     private PatientRepository patientRepository;
     @Autowired
+    private DoctorRepository doctorRepository;
+    @Autowired
     private AppointmentService appointmentService;
+    @Autowired
+    private EmailService emailService;
 
     // Create new appointment (booking)
     @PostMapping
@@ -77,7 +87,20 @@ public class AppointmentController {
             appt.setStatus(status);
             appt.setReason(reason);
 
-            return ResponseEntity.ok(appointmentRepository.save(appt));
+            Appointment savedAppt = appointmentRepository.save(appt);
+            
+            // Send appointment confirmation email
+            Optional<Patient> patientOpt = patientRepository.findById(patientId);
+            Optional<Doctor> doctorOpt = doctorRepository.findById(doctorId);
+            if (patientOpt.isPresent() && doctorOpt.isPresent()) {
+                Patient patient = patientOpt.get();
+                Doctor doctor = doctorOpt.get();
+                if (patient.getEmail() != null && !patient.getEmail().isEmpty()) {
+                    emailService.sendAppointmentConfirmationEmail(savedAppt, patient, doctor);
+                }
+            }
+            
+            return ResponseEntity.ok(savedAppt);
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "INVALID_PAYLOAD", "message", ex.getMessage()));
@@ -162,6 +185,18 @@ public class AppointmentController {
             }
 
             Appointment cancelled = appointmentService.cancelAppointment(id, userId, userRole);
+            
+            // Send cancellation email
+            Optional<Patient> patientOpt = patientRepository.findById(cancelled.getPatient_id());
+            Optional<Doctor> doctorOpt = doctorRepository.findById(cancelled.getDoctor_id());
+            if (patientOpt.isPresent() && doctorOpt.isPresent()) {
+                Patient patient = patientOpt.get();
+                Doctor doctor = doctorOpt.get();
+                if (patient.getEmail() != null && !patient.getEmail().isEmpty()) {
+                    emailService.sendAppointmentCancellationEmail(cancelled, patient, doctor);
+                }
+            }
+            
             return ResponseEntity.ok(Map.of(
                     "message", "Appointment cancelled successfully",
                     "appointment", cancelled
@@ -194,7 +229,29 @@ public class AppointmentController {
             LocalDate newDate = LocalDate.parse(String.valueOf(payload.get("appointment_date")));
             LocalTime newTime = LocalTime.parse(String.valueOf(payload.get("appointment_time")));
 
+            // Get appointment before rescheduling to capture old date/time
+            Appointment appointmentBefore = appointmentRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Appointment not found"));
+            String oldDate = appointmentBefore.getAppointment_date() != null 
+                    ? appointmentBefore.getAppointment_date().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy")) 
+                    : null;
+            String oldTime = appointmentBefore.getAppointment_time() != null 
+                    ? appointmentBefore.getAppointment_time().format(DateTimeFormatter.ofPattern("hh:mm a")) 
+                    : null;
+
             Appointment rescheduled = appointmentService.rescheduleAppointment(id, newDate, newTime, userId, userRole);
+            
+            // Send reschedule email
+            Optional<Patient> patientOpt = patientRepository.findById(rescheduled.getPatient_id());
+            Optional<Doctor> doctorOpt = doctorRepository.findById(rescheduled.getDoctor_id());
+            if (patientOpt.isPresent() && doctorOpt.isPresent()) {
+                Patient patient = patientOpt.get();
+                Doctor doctor = doctorOpt.get();
+                if (patient.getEmail() != null && !patient.getEmail().isEmpty()) {
+                    emailService.sendAppointmentRescheduleEmail(rescheduled, patient, doctor, oldDate, oldTime);
+                }
+            }
+            
             return ResponseEntity.ok(Map.of(
                     "message", "Appointment rescheduled successfully",
                     "appointment", rescheduled
@@ -234,7 +291,26 @@ public class AppointmentController {
                                 "message", "status field is required"));
             }
 
+            // Get appointment before update to capture old status
+            Appointment appointmentBefore = appointmentRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Appointment not found"));
+            String oldStatus = appointmentBefore.getStatus();
+
             Appointment updated = appointmentService.updateAppointmentStatus(id, newStatus, userId, userRole);
+            
+            // Send status update email (only if status actually changed and it's a doctor update)
+            if (!oldStatus.equalsIgnoreCase(newStatus) && "DOCTOR".equalsIgnoreCase(userRole)) {
+                Optional<Patient> patientOpt = patientRepository.findById(updated.getPatient_id());
+                Optional<Doctor> doctorOpt = doctorRepository.findById(updated.getDoctor_id());
+                if (patientOpt.isPresent() && doctorOpt.isPresent()) {
+                    Patient patient = patientOpt.get();
+                    Doctor doctor = doctorOpt.get();
+                    if (patient.getEmail() != null && !patient.getEmail().isEmpty()) {
+                        emailService.sendAppointmentStatusUpdateEmail(updated, patient, doctor, oldStatus);
+                    }
+                }
+            }
+            
             return ResponseEntity.ok(Map.of(
                     "message", "Appointment status updated successfully",
                     "appointment", updated

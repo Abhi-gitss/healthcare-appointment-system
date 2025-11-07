@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .build();
 
         UserDetails DrSunilGrover = User.builder()
-                .username("Dr. SunilGrover")
+                .username("Dr. Sunil Grover")
                 .password("{noop}sunil123")
                 .roles("DOCTOR")
                 .build();
